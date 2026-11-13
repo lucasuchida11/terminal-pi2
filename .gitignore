@@ -1,0 +1,6 @@
+terminal
+terminal.exe
+*.o
+*.txt
+*.cifrado
+*.decifrado
