@@ -13,6 +13,7 @@
 #include <string.h>
 #include "parser.h"
 #include "comandos.h"
+#include "usuarios.h"
 
 /* Remove o '\n' (e o '\r' do Windows) do fim da linha lida por fgets. */
 static void remover_quebra_linha(char *s)
@@ -30,7 +31,8 @@ int main(void)
     printf("Terminal PI2 - digite 'ajuda' para ver os comandos.\n");
 
     while (estado == CONTINUAR) {
-        printf("> ");
+        /* O prompt mostra quem esta logado, ex.: "ana> " */
+        printf("%s> ", sessao_usuario());
         fflush(stdout);
 
         if (fgets(linha, sizeof(linha), stdin) == NULL) {

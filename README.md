@@ -9,7 +9,7 @@ O programa mostra um prompt (`> `), lê a linha digitada, separa em argumentos e
 Você precisa do `gcc` (no Windows, MinGW; no Linux/macOS, o gcc do sistema).
 
 ```bash
-gcc -Wall -Wextra -std=c99 -o terminal src/main.c src/parser.c src/comandos.c src/cesar.c
+gcc -Wall -Wextra -std=c99 -o terminal src/main.c src/parser.c src/comandos.c src/cesar.c src/usuarios.c
 ```
 
 Se tiver `make` instalado, basta rodar:
@@ -41,6 +41,21 @@ terminal.exe      # Windows (cmd/PowerShell)
 
 Um texto com espaços pode ir entre aspas (`ec "ola   mundo"`) ou solto (`ec ola mundo`).
 
+## Comandos de sessão (entrega A2)
+
+| Comando | O que faz |
+|---|---|
+| `registrar <usuario>` | Cria uma conta; pede a senha duas vezes (mínimo de 4 caracteres) |
+| `login <usuario>` | Pede a senha e inicia a sessão; o prompt passa a mostrar `usuario> ` |
+| `logout` | Encerra a sessão atual |
+| `quem-sou` | Mostra o usuário logado |
+
+O nome de usuário aceita letras, dígitos, `_` e `-` (até 32 caracteres). A senha não aparece enquanto é digitada.
+
+As contas ficam em `usuarios.dat`, uma por linha, no formato `usuario:hash`. **A senha nunca é gravada em texto puro.** O programa guarda o hash FNV-1a de 64 bits da string `usuario:senha`, e o nome do usuário funciona como sal. No login, a senha digitada passa pela mesma transformação, e o programa compara os hashes.
+
+> O FNV-1a é uma transformação simples, adequada ao escopo da disciplina, mas **não é** um hash de senha seguro para uso real: é rápido demais e permite ataques de força bruta. Na prática, se usam algoritmos lentos e com sal aleatório, como bcrypt ou Argon2.
+
 ## Exemplo de uso
 
 ```
@@ -66,6 +81,7 @@ src/
   parser.c/h  separa a linha em argumentos (argc/argv), tratando aspas
   comandos.c/h tabela de comandos e implementação de cada um
   cesar.c/h   cifra de César (caractere, texto e arquivo)
+  usuarios.c/h contas, hash da senha, leitura sem eco e sessão
 docs/
   relatorio-A1.md
 ```
@@ -84,5 +100,5 @@ Maiúsculas e minúsculas são preservadas. Espaços, números e pontuação nã
 ## Roadmap
 
 - [x] A1: núcleo do terminal e cifra de César
-- [ ] A2: `registrar`, `login`, `logout`, `quem-sou`
+- [x] A2: `registrar`, `login`, `logout`, `quem-sou`
 - [ ] A2: segunda cifra à escolha do grupo

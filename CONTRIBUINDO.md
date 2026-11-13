@@ -27,7 +27,7 @@ cd terminal-pi2
 ## 4. Compilar e testar
 
 ```bash
-gcc -Wall -Wextra -std=c99 -o terminal src/main.c src/parser.c src/comandos.c src/cesar.c
+gcc -Wall -Wextra -std=c99 -o terminal src/main.c src/parser.c src/comandos.c src/cesar.c src/usuarios.c
 ./terminal
 ```
 

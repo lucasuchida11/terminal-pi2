@@ -4,6 +4,7 @@
 #include "comandos.h"
 #include "parser.h"
 #include "cesar.h"
+#include "usuarios.h"
 
 /* Declaracao antecipada: as funcoes estao definidas mais abaixo. */
 static int cmd_ajuda(int argc, char *argv[]);
@@ -12,6 +13,10 @@ static int cmd_ec(int argc, char *argv[]);
 static int cmd_criar(int argc, char *argv[]);
 static int cmd_cat(int argc, char *argv[]);
 static int cmd_cesar(int argc, char *argv[]);
+static int cmd_registrar(int argc, char *argv[]);
+static int cmd_login(int argc, char *argv[]);
+static int cmd_logout(int argc, char *argv[]);
+static int cmd_quem_sou(int argc, char *argv[]);
 
 /* ------------------------------------------------------------------ */
 /* Tabela de comandos                                                  */
@@ -38,6 +43,18 @@ static const comando COMANDOS[] = {
       "         <deslocamento> vai de 0 a 25. Com -f o resultado vai para\n"
       "         <arquivo>.cifrado ou <arquivo>.decifrado",
       "cesar cifrar -t ABC 3   (mostra DEF)", cmd_cesar },
+    { "registrar", "Cria uma conta de usuario",
+      "registrar <usuario>   (a senha e pedida duas vezes)",
+      "registrar ana", cmd_registrar },
+    { "login", "Inicia uma sessao",
+      "login <usuario>   (a senha e pedida em seguida)",
+      "login ana", cmd_login },
+    { "logout", "Encerra a sessao atual",
+      "logout",
+      "logout", cmd_logout },
+    { "quem-sou", "Informa o usuario da sessao",
+      "quem-sou",
+      "quem-sou", cmd_quem_sou },
 };
 
 #define NUM_COMANDOS ((int)(sizeof(COMANDOS) / sizeof(COMANDOS[0])))
@@ -78,7 +95,7 @@ static int cmd_ajuda(int argc, char *argv[])
     if (argc == 1) {
         printf("Comandos disponiveis:\n");
         for (i = 0; i < NUM_COMANDOS; i++)
-            printf("  %-8s %s\n", COMANDOS[i].nome, COMANDOS[i].descricao);
+            printf("  %-10s %s\n", COMANDOS[i].nome, COMANDOS[i].descricao);
         printf("Digite 'ajuda <comando>' para ver detalhes.\n");
         return CONTINUAR;
     }
@@ -98,6 +115,10 @@ static int cmd_sair(int argc, char *argv[])
 {
     (void)argc;
     (void)argv;
+    if (sessao_usuario()[0] != '\0') {
+        printf("sessao de %s encerrada.\n", sessao_usuario());
+        sessao_encerrar();
+    }
     printf("Ate logo!\n");
     return ENCERRAR;
 }
@@ -264,5 +285,99 @@ static int cmd_cesar(int argc, char *argv[])
     } else {
         printf("erro: modo '%s' invalido. Use -t (texto) ou -f (arquivo).\n", modo);
     }
+    return CONTINUAR;
+}
+
+/* ------------------------------------------------------------------ */
+/* Sessao e usuarios                                                   */
+/* ------------------------------------------------------------------ */
+
+static int cmd_registrar(int argc, char *argv[])
+{
+    char senha[MAX_SENHA], confirmacao[MAX_SENHA];
+
+    if (argc < 2) {
+        printf("erro: falta o nome de usuario. Uso: registrar <usuario>\n");
+        return CONTINUAR;
+    }
+    if (!usuario_valido(argv[1])) {
+        printf("erro: nome invalido. Use de 1 a %d letras, digitos, '_' ou '-'.\n",
+               MAX_USUARIO);
+        return CONTINUAR;
+    }
+    if (usuario_existe(argv[1])) {
+        printf("erro: o usuario %s ja existe.\n", argv[1]);
+        return CONTINUAR;
+    }
+
+    if (!ler_senha("senha: ", senha, sizeof(senha)) ||
+        !ler_senha("repita a senha: ", confirmacao, sizeof(confirmacao)))
+        return CONTINUAR;
+
+    if (strcmp(senha, confirmacao) != 0) {
+        printf("erro: as senhas sao diferentes.\n");
+        return CONTINUAR;
+    }
+    if ((int)strlen(senha) < MIN_SENHA) {
+        printf("erro: a senha precisa ter pelo menos %d caracteres.\n", MIN_SENHA);
+        return CONTINUAR;
+    }
+    if (!salvar_usuario(argv[1], senha)) {
+        printf("erro: falha ao gravar o arquivo de usuarios.\n");
+        return CONTINUAR;
+    }
+    printf("usuario %s cadastrado.\n", argv[1]);
+    return CONTINUAR;
+}
+
+static int cmd_login(int argc, char *argv[])
+{
+    char senha[MAX_SENHA];
+
+    if (argc < 2) {
+        printf("erro: falta o nome de usuario. Uso: login <usuario>\n");
+        return CONTINUAR;
+    }
+    if (sessao_usuario()[0] != '\0') {
+        printf("erro: %s ja esta logado. Use logout antes.\n", sessao_usuario());
+        return CONTINUAR;
+    }
+    if (!usuario_existe(argv[1])) {
+        printf("erro: usuario %s nao existe.\n", argv[1]);
+        return CONTINUAR;
+    }
+    if (!ler_senha("senha: ", senha, sizeof(senha)))
+        return CONTINUAR;
+
+    if (!conferir_senha(argv[1], senha)) {
+        printf("erro: senha incorreta.\n");
+        return CONTINUAR;
+    }
+    sessao_iniciar(argv[1]);
+    printf("sessao iniciada. Bem-vindo, %s!\n", argv[1]);
+    return CONTINUAR;
+}
+
+static int cmd_logout(int argc, char *argv[])
+{
+    (void)argc;
+    (void)argv;
+    if (sessao_usuario()[0] == '\0') {
+        printf("nao ha usuario logado.\n");
+        return CONTINUAR;
+    }
+    printf("sessao de %s encerrada.\n", sessao_usuario());
+    sessao_encerrar();
+    return CONTINUAR;
+}
+
+static int cmd_quem_sou(int argc, char *argv[])
+{
+    (void)argc;
+    (void)argv;
+    if (sessao_usuario()[0] == '\0')
+        printf("nenhuma sessao ativa.\n");
+    else
+        printf("%s\n", sessao_usuario());
     return CONTINUAR;
 }
