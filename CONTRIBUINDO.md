@@ -20,7 +20,7 @@ Você vai receber um convite de colaborador por e-mail ou em https://github.com/
 ## 3. Baixar o repositório
 
 ```bash
-git clone https://github.com/<dono>/terminal-pi2.git
+git clone https://github.com/lucasuchida11/terminal-pi2.git
 cd terminal-pi2
 ```
 

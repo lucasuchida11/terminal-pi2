@@ -4,7 +4,7 @@
 
 Integrantes: _(preencher)_
 
-Repositório: _(link do GitHub)_
+Repositório: https://github.com/lucasuchida11/terminal-pi2
 
 ## 1. Objetivo da etapa
 
