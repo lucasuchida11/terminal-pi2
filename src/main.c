@@ -1,48 +1,49 @@
 /*
  * Projeto Integrador II - Ciberseguranca e Criptografia (PUC-Campinas)
- * Terminal simplificado em C.
- *
- * Ciclo do interpretador de comandos:
- *   1. mostra o prompt
- *   2. le a linha digitada
- *   3. separa a linha em argumentos
- *   4. executa o comando correspondente
- *   5. repete ate o usuario digitar "sair" (ou fim da entrada)
+ * Terminal simplificado em C
+ * Lucas Uchida e Yuri Lopes
  */
 #include <stdio.h>
 #include <string.h>
 #include "parser.h"
 #include "comandos.h"
+#include "cesar.h"
 #include "usuarios.h"
 
-/* Remove o '\n' (e o '\r' do Windows) do fim da linha lida por fgets. */
-static void remover_quebra_linha(char *s)
+int main()
 {
-    s[strcspn(s, "\r\n")] = '\0';
-}
+    char linha[TAM], comando[50];
 
-int main(void)
-{
-    char linha[MAX_LINHA];
-    char *argv[MAX_ARGS];
-    int argc;
-    int estado = CONTINUAR;
+    printf("Terminal PI2 - digite ajuda para ver os comandos\n");
 
-    printf("Terminal PI2 - digite 'ajuda' para ver os comandos.\n");
+    while (1) {
+        printf("%s> ", usuario_logado);          /* ex.: "ana> " */
+        if (fgets(linha, TAM, stdin) == NULL)
+            break;                               /* acabou a entrada */
+        tirar_enter(linha);
 
-    while (estado == CONTINUAR) {
-        /* O prompt mostra quem esta logado, ex.: "ana> " */
-        printf("%s> ", sessao_usuario());
-        fflush(stdout);
+        strcpy(comando, "");
+        sscanf(linha, "%49s", comando);          /* primeira palavra */
 
-        if (fgets(linha, sizeof(linha), stdin) == NULL) {
-            printf("\n");
-            break; /* fim da entrada (Ctrl+D / Ctrl+Z) */
+        if (strcmp(comando, "") == 0)
+            continue;                            /* linha vazia */
+        else if (strcmp(comando, "sair") == 0) {
+            if (strcmp(usuario_logado, "") != 0)
+                printf("sessao de %s encerrada\n", usuario_logado);
+            printf("ate logo!\n");
+            break;
         }
-        remover_quebra_linha(linha);
-
-        argc = separar_argumentos(linha, argv, MAX_ARGS);
-        estado = executar_comando(argc, argv);
+        else if (strcmp(comando, "ajuda") == 0)     cmd_ajuda(linha);
+        else if (strcmp(comando, "ec") == 0)        cmd_ec(linha);
+        else if (strcmp(comando, "criar") == 0)     cmd_criar(linha);
+        else if (strcmp(comando, "cat") == 0)       cmd_cat(linha);
+        else if (strcmp(comando, "cesar") == 0)     cmd_cesar(linha);
+        else if (strcmp(comando, "registrar") == 0) cmd_registrar(linha);
+        else if (strcmp(comando, "login") == 0)     cmd_login(linha);
+        else if (strcmp(comando, "logout") == 0)    cmd_logout();
+        else if (strcmp(comando, "quem-sou") == 0)  cmd_quem_sou();
+        else
+            printf("comando desconhecido: %s (digite ajuda)\n", comando);
     }
     return 0;
 }

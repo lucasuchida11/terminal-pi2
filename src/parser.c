@@ -1,46 +1,41 @@
+/* Funcoes para tratar a linha digitada */
 #include <string.h>
 #include "parser.h"
 
-int separar_argumentos(char *linha, char *argv[], int max_args)
+/* Tira o Enter (\n) do final do texto lido com fgets */
+void tirar_enter(char texto[])
 {
-    int argc = 0;
-    char *p = linha;
-
-    while (*p != '\0' && argc < max_args) {
-        /* pula espacos antes do argumento */
-        while (*p == ' ' || *p == '\t')
-            p++;
-        if (*p == '\0')
-            break;
-
-        if (*p == '"') {
-            /* argumento entre aspas: vai ate a proxima aspa */
-            p++;
-            argv[argc++] = p;
-            while (*p != '\0' && *p != '"')
-                p++;
-        } else {
-            /* argumento comum: vai ate o proximo espaco */
-            argv[argc++] = p;
-            while (*p != '\0' && *p != ' ' && *p != '\t')
-                p++;
-        }
-
-        if (*p != '\0') {
-            *p = '\0'; /* termina o argumento atual */
-            p++;
-        }
+    int n = strlen(texto);
+    while (n > 0 && (texto[n - 1] == '\n' || texto[n - 1] == '\r')) {
+        texto[n - 1] = '\0';
+        n--;
     }
-    return argc;
 }
 
-void juntar_argumentos(char *destino, int tam, char *argv[], int inicio, int fim)
+/* Se o texto estiver entre aspas, tira as aspas */
+void tirar_aspas(char texto[])
 {
-    int i;
-    destino[0] = '\0';
-    for (i = inicio; i < fim; i++) {
-        if (i > inicio)
-            strncat(destino, " ", tam - strlen(destino) - 1);
-        strncat(destino, argv[i], tam - strlen(destino) - 1);
+    int i, n = strlen(texto);
+    if (n >= 2 && texto[0] == '"' && texto[n - 1] == '"') {
+        for (i = 0; i < n - 2; i++)
+            texto[i] = texto[i + 1];
+        texto[n - 2] = '\0';
     }
+}
+
+/* Devolve o que vem depois das primeiras n palavras da linha.
+   Ex.: depois_das_palavras("criar a.txt ola mundo", 2) -> "ola mundo" */
+char *depois_das_palavras(char linha[], int n)
+{
+    int i = 0;
+    while (n > 0) {
+        while (linha[i] == ' ')
+            i++;                                   /* pula os espacos */
+        while (linha[i] != ' ' && linha[i] != '\0')
+            i++;                                   /* pula a palavra */
+        n--;
+    }
+    while (linha[i] == ' ')
+        i++;
+    return &linha[i];
 }

@@ -1,9 +1,2 @@
-CC = gcc
-CFLAGS = -Wall -Wextra -std=c99
-SRC = src/main.c src/parser.c src/comandos.c src/cesar.c src/usuarios.c
-
-terminal: $(SRC)
-	$(CC) $(CFLAGS) -o terminal $(SRC)
-
-clean:
-	rm -f terminal terminal.exe
+terminal: src/main.c src/parser.c src/comandos.c src/cesar.c src/usuarios.c
+	gcc -o terminal src/main.c src/parser.c src/comandos.c src/cesar.c src/usuarios.c
